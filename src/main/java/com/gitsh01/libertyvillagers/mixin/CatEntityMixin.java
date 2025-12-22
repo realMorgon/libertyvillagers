@@ -6,18 +6,21 @@ import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.passive.CatEntity;
 import net.minecraft.entity.passive.CatVariant;
 import net.minecraft.entity.passive.TameableEntity;
-import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.util.Identifier;
 import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.util.Optional;
 
 import static com.gitsh01.libertyvillagers.LibertyVillagersMod.CONFIG;
 
@@ -41,20 +44,23 @@ public abstract class CatEntityMixin extends TameableEntity {
         }
 
         if (CONFIG.catsConfig.allBlackCats) {
-            Registries.CAT_VARIANT
-                    .getEntry(CatVariant.ALL_BLACK)
-                    .ifPresent(this::setVariant);
+            Registry<CatVariant> catVariantRegistry = world.getRegistryManager().getOrThrow(RegistryKeys.CAT_VARIANT);
+            Identifier blackCatId = Identifier.of("minecraft", "all_black");
+            catVariantRegistry.getEntry(blackCatId).ifPresent(this::setVariant);
         }
     }
 
-    @Redirect(method = "initialize",
+    //TODO test
+    @Inject(method = "initialize",
             at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/world/ServerWorldAccess;getMoonSize()F"))
-    private float replaceMoonSize(ServerWorldAccess world) {
+                    target = "Ljava/util/Optional;ifPresent(Ljava/util/function/Consumer;)V"))
+    private void injectBlackCat(ServerWorldAccess world, LocalDifficulty difficulty,
+                               SpawnReason spawnReason, EntityData entityData,
+                               CallbackInfoReturnable<EntityData> cir) {
         if (CONFIG.catsConfig.blackCatsAtAnyTime) {
-            return 1.0f;
+            Registry<CatVariant> catVariantRegistry = world.getRegistryManager().getOrThrow(RegistryKeys.CAT_VARIANT);
+            Identifier blackCatId = Identifier.of("minecraft", "all_black");
+            catVariantRegistry.getEntry(blackCatId).ifPresent(this::setVariant);
         }
-
-        return world.getMoonSize();
     }
 }

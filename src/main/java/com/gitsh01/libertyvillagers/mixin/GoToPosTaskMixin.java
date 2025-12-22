@@ -2,7 +2,7 @@ package com.gitsh01.libertyvillagers.mixin;
 
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.brain.MemoryQueryResult;
-import net.minecraft.entity.ai.brain.task.GoToNearbyPositionTask;
+import net.minecraft.entity.ai.brain.task.GoToPosTask;
 import net.minecraft.entity.ai.brain.task.TaskTriggerer;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.passive.VillagerEntity;
@@ -15,8 +15,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(GoToNearbyPositionTask.class)
-public class GoToNearbyPositionTaskMixin {
+@Mixin(GoToPosTask.class)
+public class GoToPosTaskMixin {
 
     @Inject(method = "method_47156",
             at = @At("HEAD"),
@@ -29,7 +29,7 @@ public class GoToNearbyPositionTaskMixin {
             CallbackInfoReturnable<Boolean> cir) {
         if (pathAwareEntity.getType() == EntityType.VILLAGER) {
             VillagerEntity villager = (VillagerEntity) pathAwareEntity;
-            if (villager.getVillagerData().getProfession() == VillagerProfession.FISHERMAN &&
+            if (villager.getVillagerData().profession() == VillagerProfession.FISHERMAN &&
                     villager.getMainHandStack().isOf(Items.FISHING_ROD)) {
                     cir.setReturnValue(false);
                     cir.cancel();

@@ -19,6 +19,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -146,10 +147,10 @@ public class VillagerStats {
         int unemployed = 0;
         int homeless = 0;
         for (VillagerEntity villager : villagers) {
-            if (villager.getVillagerData().getProfession() == VillagerProfession.NITWIT) {
+            if (villager.getVillagerData().profession() == VillagerProfession.NITWIT) {
                 nitwits++;
             }
-            if (villager.getVillagerData().getProfession() == VillagerProfession.NONE) {
+            if (villager.getVillagerData().profession() == VillagerProfession.NONE) {
                 unemployed++;
             }
             if (villager.isBaby()) {
@@ -219,11 +220,11 @@ public class VillagerStats {
         for (VillagerEntity villager : villagers) {
             if (villager.isBaby()) {
                 String babyText = Text.translatable("text.LibertyVillagers.villagerStats.baby").getString();
-                villagerProfessionMap.merge(babyText, new ProfessionInfo(villager.getVillagerData().getProfession(), 1),
+                villagerProfessionMap.merge(babyText, new ProfessionInfo(villager.getVillagerData().profession().value(), 1),
                         ProfessionInfo::mergeProfessionInfo);
             } else {
-                villagerProfessionMap.merge(translatedProfession(villager.getVillagerData().getProfession()),
-                        new ProfessionInfo(villager.getVillagerData().getProfession(), 1),
+                villagerProfessionMap.merge(translatedProfession(villager.getVillagerData().profession().value()),
+                        new ProfessionInfo(villager.getVillagerData().profession().value(), 1),
                         ProfessionInfo::mergeProfessionInfo);
             }
         }
@@ -370,14 +371,14 @@ public class VillagerStats {
 
         TreeMap<String, Integer> catVariantMap = new TreeMap<>();
 
-        for (Map.Entry<RegistryKey<CatVariant>, CatVariant> catVariantEntry : Registries.CAT_VARIANT.getEntrySet()) {
+        for (Map.Entry<RegistryKey<CatVariant>, CatVariant> catVariantEntry : serverWorld.getRegistryManager().getOrThrow(RegistryKeys.CAT_VARIANT).getEntrySet()) {
             catVariantMap.put(translatedCatVariant(catVariantEntry.getKey().getValue().toShortTranslationKey()), 0);
         }
 
         if (cats.size() > 0) {
             for (CatEntity cat : cats) {
                 String variant =
-                        translatedCatVariant(Registries.CAT_VARIANT.getId(cat.getVariant().value()).toShortTranslationKey());
+                        translatedCatVariant(serverWorld.getRegistryManager().getOrThrow(RegistryKeys.CAT_VARIANT).getId(cat.getVariant().value()).toShortTranslationKey());
                 catVariantMap.merge(variant, 1, Integer::sum);
             }
 

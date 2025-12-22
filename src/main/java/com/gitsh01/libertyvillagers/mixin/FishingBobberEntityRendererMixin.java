@@ -7,6 +7,7 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.FishingBobberEntityRenderer;
+import net.minecraft.client.render.entity.state.FishingBobberEntityState;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.passive.VillagerEntity;
@@ -22,7 +23,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(FishingBobberEntityRenderer.class)
-public abstract class FishingBobberEntityRendererMixin extends EntityRenderer<FishingBobberEntity> {
+public abstract class FishingBobberEntityRendererMixin extends EntityRenderer<FishingBobberEntity, FishingBobberEntityState> {
 
     @Final
     @Shadow
@@ -88,7 +89,6 @@ public abstract class FishingBobberEntityRendererMixin extends EntityRenderer<Fi
         matrixStack.push();
         matrixStack.push();
         matrixStack.scale(0.5f, 0.5f, 0.5f);
-        matrixStack.multiply(this.dispatcher.getRotation());
         matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180.0f));
         MatrixStack.Entry entry = matrixStack.peek();
         VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(LAYER);
@@ -97,18 +97,17 @@ public abstract class FishingBobberEntityRendererMixin extends EntityRenderer<Fi
         vertex(vertexConsumer, entry, i, 1.0f, 1, 1, 0);
         vertex(vertexConsumer, entry, i, 0.0f, 1, 0, 0);
         matrixStack.pop();
-        float l = MathHelper.lerp(g, villager.prevBodyYaw, villager.bodyYaw) * ((float) Math.PI / 180);
+        float l = MathHelper.lerp(g, villager.bodyYaw, villager.bodyYaw) * ((float) Math.PI / 180);
         double d = MathHelper.sin(l);
         double e = MathHelper.cos(l);
         double n = 0.4;
-        o = MathHelper.lerp(g, villager.prevX, villager.getX()) - d * n;
-        p = villager.prevY + (double) villager.getStandingEyeHeight() +
-                (villager.getY() - villager.prevY) * (double) g - 0.45;
-        q = MathHelper.lerp(g, villager.prevZ, villager.getZ()) + e * n;
+        o = MathHelper.lerp(g, villager.getX(), villager.getX()) - d * n;
+        p = villager.getY() + (double) villager.getStandingEyeHeight() - 0.45;
+        q = MathHelper.lerp(g, villager.getZ(), villager.getZ()) + e * n;
 
-        s = MathHelper.lerp(g, fishingBobberEntity.prevX, fishingBobberEntity.getX());
-        double t = MathHelper.lerp(g, fishingBobberEntity.prevY, fishingBobberEntity.getY()) + 0.25;
-        double u = MathHelper.lerp(g, fishingBobberEntity.prevZ, fishingBobberEntity.getZ());
+        s = fishingBobberEntity.getX();
+        double t = fishingBobberEntity.getY() + 0.25;
+        double u = fishingBobberEntity.getZ();
         float v = (float) (o - s);
         float w = (float) (p - t);
         float x = (float) (q - u);
@@ -122,7 +121,7 @@ public abstract class FishingBobberEntityRendererMixin extends EntityRenderer<Fi
                     FishingBobberEntityRendererMixin.percentage(z + 1, 16));
         }
         matrixStack.pop();
-        super.render(fishingBobberEntity, f, g, matrixStack, vertexConsumerProvider, i);
+//        super.render(fishingBobberEntity, new FishingBobberEntityState(), matrixStack, vertexConsumerProvider);
         ci.cancel();
     }
 }

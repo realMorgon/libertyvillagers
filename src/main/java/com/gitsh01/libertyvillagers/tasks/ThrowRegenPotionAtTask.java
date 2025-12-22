@@ -2,10 +2,12 @@ package com.gitsh01.libertyvillagers.tasks;
 
 import com.google.common.collect.Lists;
 import net.minecraft.component.type.PotionContentsComponent;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.thrown.PotionEntity;
+import net.minecraft.entity.projectile.thrown.SplashPotionEntity;
 import net.minecraft.item.Items;
 import net.minecraft.potion.Potions;
 import net.minecraft.server.world.ServerWorld;
@@ -32,14 +34,14 @@ public class ThrowRegenPotionAtTask extends HealTargetTask {
         }
 
         if (CONFIG.villagersProfessionConfig.clericThrowsPotionsAtVillagers) {
-            List<VillagerEntity> villagers = villagerEntity.getWorld().getNonSpectatingEntities(VillagerEntity.class,
+            List<VillagerEntity> villagers = villagerEntity.getEntityWorld().getNonSpectatingEntities(VillagerEntity.class,
                     villagerEntity.getBoundingBox()
                             .expand(CONFIG.villagersProfessionConfig.clericThrowsPotionsAtRange));
             possiblePatients.addAll(villagers);
         }
 
         if (CONFIG.villagersProfessionConfig.clericThrowsPotionsAtPlayers) {
-            List<PlayerEntity> players = villagerEntity.getWorld().getNonSpectatingEntities(PlayerEntity.class,
+            List<PlayerEntity> players = villagerEntity.getEntityWorld().getNonSpectatingEntities(PlayerEntity.class,
                     villagerEntity.getBoundingBox()
                             .expand(CONFIG.villagersProfessionConfig.clericThrowsPotionsAtRange));
             possiblePatients.addAll(players);
@@ -55,7 +57,7 @@ public class ThrowRegenPotionAtTask extends HealTargetTask {
         double f = currentPatient.getZ() + vec3d.z - villagerEntity.getZ();
         double g = Math.sqrt(d * d + f * f);
 
-        PotionEntity potionEntity = new PotionEntity(serverWorld, villagerEntity);
+        PotionEntity potionEntity = new SplashPotionEntity(EntityType.SPLASH_POTION, serverWorld);
         potionEntity.setItem(PotionContentsComponent.createStack(Items.SPLASH_POTION, Potions.REGENERATION));
         potionEntity.setPitch(potionEntity.getPitch() + 20.0f);
         potionEntity.setVelocity(d, e + g * 0.2, f, 0.75f, 8.0f);

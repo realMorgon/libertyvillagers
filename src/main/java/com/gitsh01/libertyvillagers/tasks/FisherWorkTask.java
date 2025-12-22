@@ -36,11 +36,11 @@ public class FisherWorkTask extends VillagerWorkTask {
         simpleInventory.removeItem(Items.SALMON, salmon);
         ItemStack cookedSalmon = simpleInventory.addStack(new ItemStack(Items.COOKED_SALMON, salmon));
         if (!cookedSalmon.isEmpty()) {
-            entity.dropStack(cookedSalmon, 0.5f);
+            entity.dropStack((ServerWorld) entity.getEntityWorld(), cookedSalmon, 0.5f);
         }
         ItemStack cookedCod = simpleInventory.addStack(new ItemStack(Items.COOKED_COD, cod));
         if (!cookedCod.isEmpty()) {
-            entity.dropStack(cookedCod, 0.5f);
+            entity.dropStack((ServerWorld) entity.getEntityWorld(), cookedCod, 0.5f);
         }
     }
 }

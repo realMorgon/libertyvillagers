@@ -13,6 +13,7 @@ import net.minecraft.entity.ai.brain.MemoryModuleType;
 import net.minecraft.entity.ai.brain.WalkTarget;
 import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.entity.passive.VillagerEntity;
+import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -20,6 +21,7 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.state.property.Properties;
 import net.minecraft.text.Text;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
@@ -78,7 +80,8 @@ public class VillagerInfo {
 
         HitResult hitResult2;
         // Look for an entity between us and the block.
-        if ((hitResult2 = ProjectileUtil.getEntityCollision(serverWorld, player, vec3d2, vec3d3,
+        //TODO: Test without projectile
+        if ((hitResult2 = ProjectileUtil.getEntityCollision(serverWorld, null, vec3d2, vec3d3,
                 player.getBoundingBox().stretch(player.getVelocity()).expand(maxDistance), Entity::isAlive)) != null) {
             hit = hitResult2;
         }
@@ -127,7 +130,7 @@ public class VillagerInfo {
 
         VillagerEntity villager = (VillagerEntity)entity;
         String occupation =
-                VillagerStats.translatedProfession(villager.getVillagerData().getProfession());
+                VillagerStats.translatedProfession(villager.getVillagerData().profession().value());
         lines.add(Text.translatable("text.LibertyVillagers.villagerInfo.occupation", occupation));
 
         // Client-side villagers don't have memories.
@@ -208,7 +211,7 @@ public class VillagerInfo {
                 lines.add(Text.translatable("text.LibertyVillagers.villagerInfo.numBees", numBees));
             }
 
-            int numHoney = blockState.getComparatorOutput(serverWorld, blockPos);
+            int numHoney = blockState.getComparatorOutput(serverWorld, blockPos, blockState.get(ComparatorBlock.FACING));
             lines.add(Text.translatable("text.LibertyVillagers.villagerInfo.numHoney", numHoney));
         }
 
@@ -238,8 +241,17 @@ public class VillagerInfo {
             return lines;
         }
 
-        @SuppressWarnings("deprecation")
-        int freeTickets = storage.getFreeTickets(blockPos);
+        Optional<net.minecraft.world.poi.PointOfInterest> poi = storage.getInSquare(
+                type -> type.matchesKey(optionalRegistryKey.get()),
+                blockPos,
+                1,
+                net.minecraft.world.poi.PointOfInterestStorage.OccupationStatus.ANY
+        ).filter(p -> p.getPos().equals(blockPos)).findFirst();
+        if (poi.isEmpty()) {
+            lines.add(Text.translatable("text.LibertyVillagers.villagerInfo.notAPOI"));
+            return lines;
+        }
+        int freeTickets = poi.get().getFreeTickets();
         Text isOccupied =
                 freeTickets < poiType.ticketCount() ? Text.translatable("text.LibertyVillagers.villagerInfo.true") :
                         Text.translatable("text" + ".LibertyVillagers.villagerInfo.false");

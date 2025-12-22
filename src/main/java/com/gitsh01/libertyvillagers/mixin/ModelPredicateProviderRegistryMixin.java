@@ -1,5 +1,6 @@
 package com.gitsh01.libertyvillagers.mixin;
 
+/*
 import com.google.common.collect.Maps;
 import net.minecraft.client.item.ClampedModelPredicateProvider;
 import net.minecraft.client.item.ModelPredicateProvider;
@@ -43,3 +44,4 @@ public class ModelPredicateProviderRegistryMixin {
         ci.cancel();
     }
 }
+ */

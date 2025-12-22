@@ -10,6 +10,7 @@ import net.minecraft.entity.ai.brain.MemoryModuleType;
 import net.minecraft.entity.ai.brain.task.*;
 import net.minecraft.entity.passive.*;
 import net.minecraft.item.Items;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.village.VillagerProfession;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
@@ -35,13 +36,12 @@ public abstract class VillagerTaskListProviderMixin {
         throw new AssertionError();
     }
 
-    @Inject(method = "createWorkTasks", at = @At("Head"), cancellable = true)
-    private static void replaceCreateWorkTasks(VillagerProfession profession, float speed,
-                                               CallbackInfoReturnable<List<Pair<Integer, ? extends Task<? super VillagerEntity>>>> cir) {
+    @Inject(method = "createWorkTasks", at = @At("HEAD"), cancellable = true)
+    private static void replaceCreateWorkTasks(RegistryEntry<VillagerProfession> profession, float speed, CallbackInfoReturnable<ImmutableList<Pair<Integer, ? extends Task<? super VillagerEntity>>>> cir) {
         Task<? super VillagerEntity> villagerWorkTask = new VillagerWorkTask(); // Plays working sounds on the job site.
         Task<? super VillagerEntity> secondaryWorkTask = null;
         // GoToIfNearby makes the villager wander around the job site.
-        Task<? super VillagerEntity> thirdWorkTask = GoToIfNearbyTask.create(MemoryModuleType.JOB_SITE, 0.4f, 4);
+        Task<? super VillagerEntity> thirdWorkTask = GoAroundTask.create(MemoryModuleType.JOB_SITE, 0.4f, 4);
         switch (profession.toString()) {
             case "armorer":
                 if (CONFIG.villagersProfessionConfig.armorerHealsGolems) {
@@ -124,7 +124,7 @@ public abstract class VillagerTaskListProviderMixin {
 
         ArrayList<Pair<Task<? super VillagerEntity>, Integer>> randomTasks = new ArrayList<>(
                 ImmutableList.of(Pair.of(villagerWorkTask, PRIMARY_WORK_TASK_PRIORITY),
-                        Pair.of(GoToNearbyPositionTask.create(MemoryModuleType.JOB_SITE, 0.4f,
+                        Pair.of(GoToPosTask.create(MemoryModuleType.JOB_SITE, 0.4f,
                                 CONFIG.villagerPathfindingConfig.minimumPOISearchDistance, 10), 5),
                         Pair.of(GoToSecondaryPositionTask.create(MemoryModuleType.SECONDARY_JOB_SITE, speed,
                                 CONFIG.villagerPathfindingConfig.minimumPOISearchDistance, 6,
@@ -152,7 +152,7 @@ public abstract class VillagerTaskListProviderMixin {
         cir.cancel();
     }
 
-    @ModifyArg(method = "createMeetTasks(Lnet/minecraft/village/VillagerProfession;F)Lcom/google/common/collect/ImmutableList;",
+    @ModifyArg(method = "createMeetTasks(Lnet/minecraft/registry/entry/RegistryEntry;F)Lcom/google/common/collect/ImmutableList;",
             at = @At(value = "INVOKE",
             target = "Lnet/minecraft/entity/ai/brain/task/VillagerWalkTowardsTask;create(Lnet/minecraft/entity/ai/brain/MemoryModuleType;FIII)Lnet/minecraft/entity/ai/brain/task/SingleTickTask;"),
             index = 2)

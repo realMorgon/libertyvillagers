@@ -31,8 +31,10 @@ public abstract class VillagerBreedTaskMixin {
     private void goHome(ServerWorld world, VillagerEntity first, VillagerEntity second, CallbackInfo ci) {
         if (CONFIG.villagersGeneralConfig.villagerBabiesRequireWorkstationAndBed) {
             Optional<BlockPos> optionalWorkstation = world.getPointOfInterestStorage()
-                    .getPosition(VillagerProfession.NONE.acquirableWorkstation(),
-                            (poiType, pos) -> this.canReachHome(first, pos, poiType), first.getBlockPos(),
+                    .getPosition(
+                            poiType -> poiType.isIn(net.minecraft.registry.tag.PointOfInterestTypeTags.ACQUIRABLE_JOB_SITE),
+                            (poiType, pos) -> this.canReachHome(first, pos, poiType),
+                            first.getBlockPos(),
                             CONFIG.villagerPathfindingConfig.findPOIRange);
             if (optionalWorkstation.isEmpty()) {
                 world.sendEntityStatus(second, EntityStatuses.ADD_VILLAGER_ANGRY_PARTICLES);
